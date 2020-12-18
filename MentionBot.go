@@ -11,11 +11,11 @@ import (
 )
 
 type Cfg struct {
-	ApiKey 		string 		`json:"api_key"`
-	UserName 	string 		`json:"user_name"`
-	Triggers 	[]string 	`json:"triggers"`
-	Chats 		[]string 	`json:"chats"`
-	ChatId		int64 		`json:"chat_id"`
+	ApiKey   string   `json:"api_key"`
+	UserName string   `json:"user_name"`
+	Triggers []string `json:"triggers"`
+	Chats    []string `json:"chats"`
+	ChatId   int64    `json:"chat_id"`
 }
 
 var config = Cfg{}
@@ -30,11 +30,30 @@ func sendMsg(msg string) {
 	_, _ = botApi.Send(message)
 }
 
-func authorize(){
+func authorize() {
 	configText, _ := ioutil.ReadFile("config.json")
 
 	if err := json.Unmarshal(configText, &config); err != nil {
 		log.Fatal(err)
+	}
+
+	if config.ChatId == 0 {
+		authorizeTelegram()
+
+		u := tgbotapi.NewUpdate(0)
+		u.Timeout = 60
+
+		updates, _ := botApi.GetUpdatesChan(u)
+		println("Write something to your bot to get chat ID")
+		for update := range updates {
+			if update.Message == nil { // ignore any non-Message Updates
+				continue
+			}
+
+			log.Printf("your ID:%d\n", update.Message.Chat.ID)
+			config.ChatId = update.Message.Chat.ID
+			break
+		}
 	}
 
 	authorizeTwitch()
@@ -57,9 +76,9 @@ func authorizeTwitch() {
 	}
 }
 
-func handleChatMessage(message twitch.PrivateMessage){
+func handleChatMessage(message twitch.PrivateMessage) {
 	// log.Print(message.Message)
-	if strings.Contains(strings.ToLower(message.Message), "@" + strings.ToLower(config.UserName)) {
+	if strings.Contains(strings.ToLower(message.Message), "@"+strings.ToLower(config.UserName)) {
 		authorizeTelegram()
 		sendMsg(fmt.Sprintf("chat: %s\n@%s: %s", message.Channel, message.User.Name, message.Message))
 	} else {
