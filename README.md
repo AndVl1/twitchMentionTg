@@ -2,4 +2,4 @@
 ------
 1. Create telegram bot on t.me/BotFather
 2. Copy your API Key to config
-3. If you don't have your Id, type a message to bot to get it. It isn't necessarily to save it in config
+3. If you don't have your Id, type a message to bot to get it (after turning app on). It isn't necessarily to save it in config
