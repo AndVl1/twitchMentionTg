@@ -7,6 +7,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"io/ioutil"
 	"log"
+	"regexp"
 	"strings"
 )
 
@@ -27,6 +28,7 @@ func main() {
 
 func sendMsg(msg string) {
 	message := tgbotapi.NewMessage(config.ChatId, msg)
+	message.ParseMode = "Markdown"
 	_, _ = botApi.Send(message)
 }
 
@@ -60,6 +62,24 @@ func authorize() {
 	//authorizeTelegram()
 }
 
+func removeNicknames(s string) string {
+	var re = regexp.MustCompile(`@\w+`)
+	result := ""
+	final := ""
+	var matches = re.FindAllStringSubmatchIndex(s, -1)
+	last := 0
+	for _, indices := range matches {
+		result += fmt.Sprintf("%s`@%s`",
+			s[last:indices[0]],
+			s[indices[0]+1:indices[1]])
+		last = indices[1]
+		final = s[indices[1]:]
+
+	}
+	result += final
+	return result
+}
+
 func authorizeTwitch() {
 	log.Println("auth on twitch")
 	client := twitch.NewAnonymousClient()
@@ -70,7 +90,6 @@ func authorizeTwitch() {
 	client.OnPrivateMessage(handleChatMessage)
 
 	client.Join(config.Chats...)
-	log.Println("...")
 	if err := client.Connect(); err != nil {
 		log.Panic(err)
 	}
@@ -78,14 +97,32 @@ func authorizeTwitch() {
 
 func handleChatMessage(message twitch.PrivateMessage) {
 	// log.Print(message.Message)
+	msgText := message.Message
+
 	if strings.Contains(strings.ToLower(message.Message), "@"+strings.ToLower(config.UserName)) {
 		authorizeTelegram()
-		sendMsg(fmt.Sprintf("chat: %s\n@%s: %s", message.Channel, message.User.Name, message.Message))
+		msgText = removeNicknames(msgText)
+		sendMsg(
+			fmt.Sprintf("chat: %s\n`@%s`: %s",
+				message.Channel,
+				message.User.DisplayName,
+				msgText))
 	} else {
 		for _, trigger := range config.Triggers {
 			if strings.Contains(strings.ToLower(message.Message), strings.ToLower(trigger)) {
 				authorizeTelegram()
-				sendMsg(fmt.Sprintf("chat: %s\n@%s: %s", message.Channel, message.User.DisplayName, message.Message))
+				if match, _ := regexp.Match(`@\w+`, []byte(message.Message)); match {
+					msgText = removeNicknames(message.Message)
+				}
+				sendMsg(
+					fmt.Sprintf("chat: %s\n`@%s`: %s",
+						message.Channel,
+						message.User.DisplayName,
+						strings.Replace(
+							msgText,
+							trigger,
+							fmt.Sprintf("`%s`", trigger),
+							-1)))
 			}
 		}
 	}
