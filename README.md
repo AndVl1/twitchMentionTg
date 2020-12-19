@@ -10,3 +10,4 @@
 2. Run `go get github.com/gempir/go-twitch-irc` and `github.com/go-telegram-bot-api/telegram-bot-api`
 3.  1. In project folder, run `go run MentionBot.go`
     2. Or run `go build MentionBot.go` end open new exe file
+4. Go to `If you are sure`
