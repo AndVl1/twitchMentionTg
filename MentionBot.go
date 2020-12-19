@@ -27,9 +27,13 @@ func main() {
 }
 
 func sendMsg(msg string) {
+	log.Println(msg)
+	authorizeTelegram()
 	message := tgbotapi.NewMessage(config.ChatId, msg)
-	message.ParseMode = "Markdown"
-	_, _ = botApi.Send(message)
+	message.ParseMode = "HTML"
+	if _, err := botApi.Send(message); err != nil {
+		log.Panic(err)
+	}
 }
 
 func authorize() {
@@ -65,11 +69,11 @@ func authorize() {
 func removeNicknames(s string) string {
 	var re = regexp.MustCompile(`@\w+`)
 	result := ""
-	final := ""
+	final := s
 	var matches = re.FindAllStringSubmatchIndex(s, -1)
 	last := 0
 	for _, indices := range matches {
-		result += fmt.Sprintf("%s`@%s`",
+		result += fmt.Sprintf("%s<code>@%s</code>",
 			s[last:indices[0]],
 			s[indices[0]+1:indices[1]])
 		last = indices[1]
@@ -96,32 +100,30 @@ func authorizeTwitch() {
 }
 
 func handleChatMessage(message twitch.PrivateMessage) {
-	// log.Print(message.Message)
 	msgText := message.Message
 
 	if strings.Contains(strings.ToLower(message.Message), "@"+strings.ToLower(config.UserName)) {
-		authorizeTelegram()
 		msgText = removeNicknames(msgText)
+		log.Println(msgText)
 		sendMsg(
-			fmt.Sprintf("chat: %s\n`@%s`: %s",
+			fmt.Sprintf("chat: %s\n<code>@%s</code>: %s",
 				message.Channel,
 				message.User.DisplayName,
 				msgText))
 	} else {
 		for _, trigger := range config.Triggers {
 			if strings.Contains(strings.ToLower(message.Message), strings.ToLower(trigger)) {
-				authorizeTelegram()
 				if match, _ := regexp.Match(`@\w+`, []byte(message.Message)); match {
 					msgText = removeNicknames(message.Message)
 				}
 				sendMsg(
-					fmt.Sprintf("chat: %s\n`@%s`: %s",
+					fmt.Sprintf("chat: %s\n<code>@%s</code>: %s",
 						message.Channel,
 						message.User.DisplayName,
 						strings.Replace(
 							msgText,
 							trigger,
-							fmt.Sprintf("`%s`", trigger),
+							fmt.Sprintf("<code>%s</code>", trigger),
 							-1)))
 			}
 		}
