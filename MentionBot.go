@@ -7,7 +7,9 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -37,10 +39,13 @@ func sendMsg(msg string) {
 }
 
 func authorize() {
-	configText, _ := ioutil.ReadFile("config.json")
-
-	if err := json.Unmarshal(configText, &config); err != nil {
-		log.Fatal(err)
+	configText, err := ioutil.ReadFile("config.json")
+	if err == nil {
+		if err := json.Unmarshal(configText, &config); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		getFromEnvVariables(&config)
 	}
 
 	if config.ChatId == 0 {
@@ -140,4 +145,12 @@ func authorizeTelegram() {
 
 	log.Printf("Authorized on account %s", botApi.Self.UserName)
 
+}
+
+func getFromEnvVariables(config *Cfg) {
+	config.UserName = os.Getenv("user_name")
+	config.ChatId, _ = strconv.ParseInt(os.Getenv("chat_id"), 10, 64)
+	config.ApiKey = os.Getenv("")
+	config.Triggers = strings.Split(os.Getenv("triggers"), ",")
+	config.Chats = strings.Split(os.Getenv("chats"), ",")
 }
