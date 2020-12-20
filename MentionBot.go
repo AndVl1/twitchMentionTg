@@ -45,6 +45,7 @@ func authorize() {
 			log.Fatal(err)
 		}
 	} else {
+		log.Println("configtext nil")
 		getFromEnvVariables(&config)
 	}
 
