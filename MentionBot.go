@@ -7,6 +7,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
@@ -25,6 +26,10 @@ var config = Cfg{}
 var botApi *tgbotapi.BotAPI
 
 func main() {
+	http.HandleFunc("/", MainHandler)
+	go func() {
+		_ = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	}()
 	authorize()
 }
 
@@ -154,4 +159,8 @@ func getFromEnvVariables(config *Cfg) {
 	config.Triggers = strings.Split(os.Getenv("triggers"), ",")
 	config.Chats = strings.Split(os.Getenv("chats"), ",")
 	log.Print(config.UserName)
+}
+
+func MainHandler(r http.ResponseWriter, _ *http.Request) {
+	_, _ = r.Write([]byte("Hi there"))
 }
