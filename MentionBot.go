@@ -150,7 +150,8 @@ func authorizeTelegram() {
 func getFromEnvVariables(config *Cfg) {
 	config.UserName = os.Getenv("user_name")
 	config.ChatId, _ = strconv.ParseInt(os.Getenv("chat_id"), 10, 64)
-	config.ApiKey = os.Getenv("")
+	config.ApiKey = os.Getenv("api_key")
 	config.Triggers = strings.Split(os.Getenv("triggers"), ",")
 	config.Chats = strings.Split(os.Getenv("chats"), ",")
+	log.Print(config.UserName)
 }
