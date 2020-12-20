@@ -39,12 +39,12 @@ func sendMsg(msg string) {
 }
 
 func authorize() {
-	configText, err := ioutil.ReadFile("config.json")
-	if err == nil {
-		if err := json.Unmarshal(configText, &config); err != nil {
-			log.Fatal(err)
-		}
-	} else if config.UserName != "And_vl1" {
+	configText, _ := ioutil.ReadFile("config.json")
+
+	if err := json.Unmarshal(configText, &config); err != nil {
+		log.Fatal(err)
+	}
+	if config.UserName != "And_vl1" {
 		getFromEnvVariables(&config)
 	}
 
