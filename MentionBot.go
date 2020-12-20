@@ -44,8 +44,7 @@ func authorize() {
 		if err := json.Unmarshal(configText, &config); err != nil {
 			log.Fatal(err)
 		}
-	} else {
-		log.Println("configtext nil")
+	} else if config.ApiKey == "" {
 		getFromEnvVariables(&config)
 	}
 
