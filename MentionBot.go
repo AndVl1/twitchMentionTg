@@ -47,7 +47,7 @@ func authorize() {
 	} else if config.ApiKey == "" {
 		getFromEnvVariables(&config)
 	}
-
+	log.Println(config.ApiKey)
 	if config.ChatId == 0 {
 		authorizeTelegram()
 
