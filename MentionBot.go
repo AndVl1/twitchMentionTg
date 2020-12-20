@@ -44,10 +44,10 @@ func authorize() {
 		if err := json.Unmarshal(configText, &config); err != nil {
 			log.Fatal(err)
 		}
-	} else if config.ApiKey == "" {
+	} else if config.UserName != "And_vl1" {
 		getFromEnvVariables(&config)
 	}
-	log.Println(config.ApiKey)
+
 	if config.ChatId == 0 {
 		authorizeTelegram()
 
